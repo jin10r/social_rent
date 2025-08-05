@@ -22,9 +22,6 @@ async def verify_telegram_auth(
     """Verify Telegram Web App authentication"""
     try:
         auth_data = credentials.credentials
-        # Parse auth data (usually comes as query string)
-        if auth_data.startswith("Bearer "):
-            auth_data = auth_data[7:]
         
         # For now, we'll implement a simplified version
         # In production, you should properly verify the hash
@@ -32,8 +29,16 @@ async def verify_telegram_auth(
         
         # Parse JSON data (simplified for demo)
         try:
-            user_data = json.loads(auth_data)
-            return user_data
+            # Try to decode base64 first if it looks like base64
+            try:
+                import base64
+                decoded_data = base64.b64decode(auth_data).decode('utf-8')
+                user_data = json.loads(decoded_data)
+                return user_data
+            except:
+                # If not base64, try direct JSON
+                user_data = json.loads(auth_data)
+                return user_data
         except json.JSONDecodeError:
             # Try parsing as query string
             parsed = parse_qs(auth_data)

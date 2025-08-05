@@ -165,8 +165,17 @@ async def like_listing(
     db: AsyncSession = Depends(get_database)
 ):
     """Like a listing"""
+    try:
+        # Convert string UUID to UUID object
+        listing_uuid = uuid.UUID(listing_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid listing ID format"
+        )
+    
     listing_service = ListingService(db)
-    result = await listing_service.like_listing(current_user.id, listing_id)
+    result = await listing_service.like_listing(current_user.id, listing_uuid)
     return result
 
 @app.get("/api/listings/liked", response_model=list[ListingResponse])

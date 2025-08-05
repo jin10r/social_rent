@@ -8,7 +8,12 @@ import os
 import uuid
 from typing import AsyncGenerator
 import asyncio
+import logging
 from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -19,7 +24,7 @@ from schemas import (
     ListingResponse, UserProfileResponse,
     LikeUserRequest, MatchResponse
 )
-from database import get_database, init_database
+from database import get_database, init_database, close_database
 from auth import verify_telegram_auth, get_current_user
 from services import UserService, ListingService, MatchingService
 
@@ -27,9 +32,21 @@ from services import UserService, ListingService, MatchingService
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await init_database()
+    logger.info("Starting application...")
+    try:
+        await init_database()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
     yield
     # Shutdown - cleanup if needed
+    logger.info("Shutting down application...")
+    try:
+        await close_database()
+        logger.info("Database connections closed successfully")
+    except Exception as e:
+        logger.error(f"Error closing database connections: {e}")
 
 app = FastAPI(
     title="Social Rent API",

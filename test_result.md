@@ -66,15 +66,18 @@ backend:
 
   - task: "Like User API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/main.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "⏳ POST /api/users/{user_id}/like endpoint not fully tested due to potential matches API failure. Needs testing after fixing potential matches."
+      - working: true
+        agent: "testing"
+        comment: "✅ POST /api/users/{user_id}/like endpoint working correctly. Fixed UUID parameter handling by converting string UUID to UUID object. Successfully creates likes and detects mutual matches. Creates UserMatch records when mutual likes are found."
 
   - task: "Get User Matches API"
     implemented: true

@@ -282,42 +282,77 @@ class ListingService:
         result = await self.db.execute(query)
         
         listings = []
-        for row in result:
-            if isinstance(row, tuple):
-                listing, distance = row
-            else:
-                listing = row
-                distance = None
-            
-            # Extract coordinates
-            location_stmt = select(func.ST_AsText(listing.location))
-            loc_result = await self.db.execute(location_stmt)
-            location_text = loc_result.scalar()
-            
-            # Parse POINT(lon lat) format
-            coords = location_text.replace('POINT(', '').replace(')', '').split()
-            listing_lon, listing_lat = float(coords[0]), float(coords[1])
-            
-            listing_response = ListingResponse(
-                id=listing.id,
-                title=listing.title,
-                description=listing.description,
-                price=listing.price,
-                address=listing.address,
-                lat=listing_lat,
-                lon=listing_lon,
-                rooms=listing.rooms,
-                area=listing.area,
-                floor=listing.floor,
-                total_floors=listing.total_floors,
-                metro_station=listing.metro_station,
-                metro_distance=listing.metro_distance,
-                photos=listing.photos,
-                distance=distance,
-                is_active=listing.is_active,
-                created_at=listing.created_at
-            )
-            listings.append(listing_response)
+        if lat is not None and lon is not None:
+            # When location filter is applied, we get tuples with distance
+            rows = result.fetchall()
+            for row in rows:
+                if isinstance(row, tuple) and len(row) > 1:
+                    listing, distance = row[0], row[1]
+                else:
+                    listing = row[0]
+                    distance = None
+                
+                # Extract coordinates  
+                location_stmt = select(func.ST_AsText(listing.location))
+                loc_result = await self.db.execute(location_stmt)
+                location_text = loc_result.scalar()
+                
+                # Parse POINT(lon lat) format
+                coords = location_text.replace('POINT(', '').replace(')', '').split()
+                listing_lon, listing_lat = float(coords[0]), float(coords[1])
+                
+                listing_response = ListingResponse(
+                    id=listing.id,
+                    title=listing.title,
+                    description=listing.description,
+                    price=listing.price,
+                    address=listing.address,
+                    lat=listing_lat,
+                    lon=listing_lon,
+                    rooms=listing.rooms,
+                    area=listing.area,
+                    floor=listing.floor,
+                    total_floors=listing.total_floors,
+                    metro_station=listing.metro_station,
+                    metro_distance=listing.metro_distance,
+                    photos=listing.photos,
+                    distance=distance,
+                    is_active=listing.is_active,
+                    created_at=listing.created_at
+                )
+                listings.append(listing_response)
+        else:
+            # Without location filter, we get just the listing objects
+            result_listings = result.scalars().all()
+            for listing in result_listings:
+                # Extract coordinates
+                location_stmt = select(func.ST_AsText(listing.location))
+                loc_result = await self.db.execute(location_stmt)
+                location_text = loc_result.scalar()
+                
+                # Parse POINT(lon lat) format
+                coords = location_text.replace('POINT(', '').replace(')', '').split()
+                listing_lon, listing_lat = float(coords[0]), float(coords[1])
+                
+                listing_response = ListingResponse(
+                    id=listing.id,
+                    title=listing.title,
+                    description=listing.description,
+                    price=listing.price,
+                    address=listing.address,
+                    lat=listing_lat,
+                    lon=listing_lon,
+                    rooms=listing.rooms,
+                    area=listing.area,
+                    floor=listing.floor,
+                    total_floors=listing.total_floors,
+                    metro_station=listing.metro_station,
+                    metro_distance=listing.metro_distance,
+                    photos=listing.photos,
+                    is_active=listing.is_active,
+                    created_at=listing.created_at
+                )
+                listings.append(listing_response)
         
         return listings
 

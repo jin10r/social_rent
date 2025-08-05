@@ -199,11 +199,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Get Potential Matches API"
-    - "Like User API"
-    - "Get User Matches API"
+    []
   stuck_tasks:
-    - "Get Potential Matches API"
+    []
   test_all: false
   test_priority: "high_first"
 

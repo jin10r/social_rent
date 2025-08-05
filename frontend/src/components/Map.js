@@ -449,6 +449,16 @@ const Map = () => {
               <span className="font-semibold">{listings.length}</span>
             </div>
             
+            {showMatches && (
+              <div className="flex justify-between items-center mt-2">
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="tg-text-hint" />
+                  <span className="tg-text-hint">Ваши матчи на карте:</span>
+                </div>
+                <span className="font-semibold">{matches.length}</span>
+              </div>
+            )}
+            
             {userLocation && (
               <div className="flex justify-between items-center mt-2">
                 <div className="flex items-center gap-2">
@@ -467,9 +477,17 @@ const Map = () => {
             )}
           </div>
 
+          {showMatches && matches.length > 0 && (
+            <div className="mt-4 p-3 tg-secondary-bg-color rounded">
+              <p className="tg-text-hint text-sm text-center">
+                💡 Красные пунктирные круги показывают радиусы поиска ваших матчей
+              </p>
+            </div>
+          )}
+
           <div className="mt-4 p-3 tg-secondary-bg-color rounded">
             <p className="tg-text-hint text-sm text-center">
-              💡 Нажмите на маркеры, чтобы увидеть детали объявлений
+              💡 Нажмите на маркеры, чтобы увидеть детали объявлений {matches.length > 0 && showMatches ? 'и связаться с матчами' : ''}
             </p>
           </div>
         </div>

@@ -64,8 +64,8 @@ class ListingBase(BaseModel):
     photos: Optional[List[str]] = None
 
 class ListingCreate(ListingBase):
-    lat: float
-    lon: float
+    lat: float = Field(ge=-90, le=90, description="Latitude must be between -90 and 90")
+    lon: float = Field(ge=-180, le=180, description="Longitude must be between -180 and 180")
 
 class ListingResponse(ListingBase):
     id: UUID

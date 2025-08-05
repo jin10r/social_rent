@@ -186,9 +186,18 @@ async def get_user_liked_listings(
     db: AsyncSession = Depends(get_database)
 ):
     """Get liked listings of a matched user"""
+    try:
+        # Convert string UUID to UUID object
+        target_user_id = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user ID format"
+        )
+    
     matching_service = MatchingService(db)
     # Verify users are matched
-    is_matched = await matching_service.are_users_matched(current_user.id, user_id)
+    is_matched = await matching_service.are_users_matched(current_user.id, target_user_id)
     if not is_matched:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -196,7 +205,7 @@ async def get_user_liked_listings(
         )
     
     listing_service = ListingService(db)
-    listings = await listing_service.get_user_liked_listings(user_id)
+    listings = await listing_service.get_user_liked_listings(target_user_id)
     return listings
 
 if __name__ == "__main__":

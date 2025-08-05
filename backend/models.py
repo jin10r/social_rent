@@ -40,7 +40,7 @@ class Listing(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    price = Column(Integer, nullable=False, CheckConstraint('price >= 0'))
+    price = Column(Integer, CheckConstraint('price >= 0'), nullable=False)
     address = Column(String(500), nullable=True)
     location = Column(Geography('POINT', srid=4326), nullable=False, index=True)
     rooms = Column(Integer, CheckConstraint('rooms > 0'), nullable=True)

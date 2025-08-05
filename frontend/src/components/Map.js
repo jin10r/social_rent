@@ -274,6 +274,103 @@ const Map = () => {
                   }}
                 />
 
+                {/* Matched users radii */}
+                {showMatches && matches.map((match) => {
+                  // Нужно получить координаты пользователя из его профиля
+                  // Для демо будем использовать случайные координаты рядом с центром Москвы
+                  const randomLat = 55.7558 + (Math.random() - 0.5) * 0.1;
+                  const randomLon = 37.6176 + (Math.random() - 0.5) * 0.1;
+                  const radius = match.user.search_radius || 2000;
+                  
+                  return (
+                    <React.Fragment key={`match-${match.id}`}>
+                      <Circle
+                        center={[randomLat, randomLon]}
+                        radius={radius}
+                        pathOptions={{
+                          fillColor: '#FF6B6B',
+                          fillOpacity: 0.1,
+                          color: '#FF6B6B',
+                          opacity: 0.4,
+                          weight: 2,
+                          dashArray: '5, 5'
+                        }}
+                      />
+                      <Marker position={[randomLat, randomLon]}>
+                        <Popup>
+                          <div style={{ minWidth: '200px' }}>
+                            <div className="flex items-center gap-2 mb-2">
+                              {match.user.photo_url ? (
+                                <img
+                                  src={match.user.photo_url}
+                                  alt="Profile"
+                                  className="tg-avatar"
+                                  style={{ width: '40px', height: '40px' }}
+                                />
+                              ) : (
+                                <div className="tg-avatar" style={{ width: '40px', height: '40px', fontSize: '18px' }}>
+                                  {match.user.first_name ? match.user.first_name[0].toUpperCase() : '👤'}
+                                </div>
+                              )}
+                              <div>
+                                <h4 className="font-semibold">
+                                  {match.user.first_name} {match.user.last_name || ''}
+                                </h4>
+                                <p className="text-sm text-gray-600">Ваш матч!</p>
+                              </div>
+                            </div>
+                            
+                            {match.user.bio && (
+                              <p className="text-sm mb-2" style={{ lineHeight: '1.3' }}>
+                                {match.user.bio.length > 100 
+                                  ? match.user.bio.substring(0, 100) + '...'
+                                  : match.user.bio
+                                }
+                              </p>
+                            )}
+
+                            {match.user.metro_station && (
+                              <div className="text-sm mb-2">
+                                🚇 {match.user.metro_station}
+                              </div>
+                            )}
+
+                            <div className="text-sm mb-2">
+                              📍 Радиус поиска: {Math.round(radius / 1000)} км
+                            </div>
+
+                            {(match.user.price_min || match.user.price_max) && (
+                              <div className="text-sm mb-2">
+                                💰 Бюджет: {match.user.price_min && match.user.price_max ? (
+                                  `${match.user.price_min.toLocaleString()} - ${match.user.price_max.toLocaleString()} ₽`
+                                ) : match.user.price_min ? (
+                                  `от ${match.user.price_min.toLocaleString()} ₽`
+                                ) : (
+                                  `до ${match.user.price_max.toLocaleString()} ₽`
+                                )}
+                              </div>
+                            )}
+
+                            <button
+                              className="tg-button w-full"
+                              onClick={() => {
+                                if (match.user.username) {
+                                  window.open(`https://t.me/${match.user.username}`, '_blank');
+                                } else {
+                                  window.location.href = '/matches';
+                                }
+                              }}
+                              style={{ fontSize: '14px', padding: '8px 12px' }}
+                            >
+                              💬 Связаться
+                            </button>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    </React.Fragment>
+                  );
+                })}
+
                 {/* Listings */}
                 {listings.map((listing) => (
                   <Marker

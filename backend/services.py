@@ -180,12 +180,31 @@ class MatchingService:
         new_like = UserLike(liker_id=liker_id, liked_id=liked_id)
         self.db.add(new_like)
         
-        # Check for mutual like (match will be created by database trigger)
+        # Check for mutual like and create match if found
         mutual_like_stmt = select(UserLike).where(
             and_(UserLike.liker_id == liked_id, UserLike.liked_id == liker_id)
         )
         result = await self.db.execute(mutual_like_stmt)
         mutual_like = result.scalar_one_or_none()
+        
+        # If mutual like exists, create a match
+        if mutual_like:
+            # Check if match already exists
+            existing_match_stmt = select(UserMatch).where(
+                or_(
+                    and_(UserMatch.user1_id == liker_id, UserMatch.user2_id == liked_id),
+                    and_(UserMatch.user1_id == liked_id, UserMatch.user2_id == liker_id)
+                )
+            )
+            result = await self.db.execute(existing_match_stmt)
+            existing_match = result.scalar_one_or_none()
+            
+            if not existing_match:
+                # Create new match (ensure consistent ordering: smaller UUID first)
+                user1_id = min(liker_id, liked_id)
+                user2_id = max(liker_id, liked_id)
+                new_match = UserMatch(user1_id=user1_id, user2_id=user2_id)
+                self.db.add(new_match)
         
         await self.db.commit()
         

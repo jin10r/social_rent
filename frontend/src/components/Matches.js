@@ -45,9 +45,12 @@ const Matches = () => {
     hapticFeedback('impact', 'medium');
     
     if (user.username) {
-      openTelegramLink(user.username);
+      // Открываем Telegram напрямую
+      window.open(`https://t.me/${user.username}`, '_blank');
     } else {
-      showAlert(`Свяжитесь с пользователем: ${user.first_name} ${user.last_name || ''}`);
+      // Показать контактную информацию
+      const contactInfo = `Свяжитесь с пользователем:\n\n👤 ${user.first_name} ${user.last_name || ''}\n${user.age ? `🎂 ${user.age} лет\n` : ''}${user.metro_station ? `🚇 ${user.metro_station}\n` : ''}${user.bio ? `💬 ${user.bio}` : ''}`;
+      showAlert(contactInfo);
     }
   };
 

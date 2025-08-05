@@ -100,6 +100,11 @@ class MatchingService:
         if not current_user or not current_user.search_location:
             return []
 
+        # Get current user's location as text
+        location_stmt = select(func.ST_AsText(current_user.search_location))
+        loc_result = await self.db.execute(location_stmt)
+        location_text = loc_result.scalar()
+        
         # Find users with overlapping search areas
         # Users are potential matches if:
         # 1. Their search area overlaps with current user's search area
@@ -109,15 +114,15 @@ class MatchingService:
         
         stmt = text("""
             SELECT u.*, 
-                   ST_Distance(u.search_location, :current_location) / 1000 as distance_km
+                   ST_Distance(u.search_location, ST_GeogFromText(:current_location)) / 1000 as distance_km
             FROM users u
             WHERE u.id != :user_id 
               AND u.is_active = true
               AND u.search_location IS NOT NULL
               AND u.search_radius IS NOT NULL
               AND (
-                  ST_DWithin(u.search_location, :current_location, u.search_radius)
-                  OR ST_DWithin(:current_location, u.search_location, :current_radius)
+                  ST_DWithin(u.search_location, ST_GeogFromText(:current_location), u.search_radius)
+                  OR ST_DWithin(ST_GeogFromText(:current_location), u.search_location, :current_radius)
               )
               AND u.id NOT IN (
                   SELECT liked_id FROM user_likes WHERE liker_id = :user_id
@@ -128,7 +133,7 @@ class MatchingService:
         
         result = await self.db.execute(stmt, {
             'user_id': user_id,
-            'current_location': current_user.search_location,
+            'current_location': location_text,
             'current_radius': current_user.search_radius or 1000,
             'limit': limit
         })

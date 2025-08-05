@@ -116,7 +116,7 @@ async def handle_web_app_data(message: Message):
                 f"Пользователь: {match_user.get('first_name', 'Новый пользователь')}\n"
                 f"Теперь вы можете общаться!"
             )
-        elif data.get("type") == "contact_request"):
+        elif data.get("type") == "contact_request":
             await message.answer("📞 Контактные данные переданы в приложение")
         
     except json.JSONDecodeError:

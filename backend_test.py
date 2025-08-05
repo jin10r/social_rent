@@ -114,10 +114,8 @@ class SocialRentAPITester:
                 "lon": MOSCOW_CENTER["lon"] + random.uniform(-0.1, 0.1)
             }
             
-            # Add auth_data as query parameter for this endpoint
-            auth_token = self.create_auth_token(user_data)
-            response = self.session.post(f"{API_BASE}/users/?auth_data={auth_token}", 
-                                       headers={"Content-Type": "application/json"}, 
+            response = self.session.post(f"{API_BASE}/users/", 
+                                       headers=headers, 
                                        json=profile_data)
             
             success = response.status_code == 200

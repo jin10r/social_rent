@@ -51,15 +51,18 @@ backend:
 
   - task: "Get Potential Matches API"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/services.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ GET /api/users/potential-matches endpoint returns 500 error. Issue with PostGIS raw SQL query in MatchingService.get_potential_matches method. The ST_Distance and ST_DWithin functions may have parameter binding issues."
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/users/potential-matches endpoint fixed and working correctly. Fixed PostGIS raw SQL query by converting WKBElement to text format using ST_AsText before passing to raw SQL. Successfully returns potential matches based on overlapping search areas with distance calculations."
 
   - task: "Like User API"
     implemented: true

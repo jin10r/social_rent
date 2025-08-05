@@ -132,6 +132,7 @@ const Map = () => {
     } else {
       loadListings();
     }
+    loadMatches(); // Обновляем матчи тоже
   };
 
   const formatPrice = (price) => {

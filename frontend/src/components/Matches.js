@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, MapPin, Calendar, Heart, DollarSign, ExternalLink } from 'lucide-react';
+import { MessageCircle, MapPin, Calendar, Heart, DollarSign, ExternalLink, Map as MapIcon } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { useTelegram } from '../hooks/useTelegram';
 

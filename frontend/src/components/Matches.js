@@ -256,22 +256,42 @@ const Matches = () => {
                     </div>
 
                     <div className="flex items-center justify-between mt-2">
-                      <button
-                        className="tg-button tg-button-secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleContactUser(match.user);
-                        }}
-                        style={{ 
-                          width: 'auto', 
-                          minHeight: 'auto', 
-                          padding: '6px 12px',
-                          fontSize: '14px'
-                        }}
-                      >
-                        <MessageCircle size={14} />
-                        <span style={{ marginLeft: '6px' }}>Написать</span>
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          className="tg-button tg-button-secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContactUser(match.user);
+                          }}
+                          style={{ 
+                            width: 'auto', 
+                            minHeight: 'auto', 
+                            padding: '6px 12px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <MessageCircle size={14} />
+                          <span style={{ marginLeft: '6px' }}>Написать</span>
+                        </button>
+                        
+                        <button
+                          className="tg-button tg-button-secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            hapticFeedback('selection');
+                            window.location.href = '/map';
+                          }}
+                          style={{ 
+                            width: 'auto', 
+                            minHeight: 'auto', 
+                            padding: '6px 12px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <MapIcon size={14} />
+                          <span style={{ marginLeft: '6px' }}>На карте</span>
+                        </button>
+                      </div>
                       
                       <div className="flex items-center gap-1 tg-text-hint text-sm">
                         <Heart size={12} />

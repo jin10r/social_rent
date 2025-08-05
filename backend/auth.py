@@ -16,7 +16,7 @@ security = HTTPBearer()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8482163056:AAFO_l3IuliKB6I81JyQ-3_VrZuQ-8S5P-k")
 
-def verify_telegram_auth(auth_data: str) -> Dict:
+async def verify_telegram_auth(auth_data: str = None) -> Dict:
     """Verify Telegram Web App authentication"""
     try:
         # Parse auth data (usually comes as query string)

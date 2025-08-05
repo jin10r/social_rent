@@ -27,9 +27,16 @@ from services import UserService, ListingService, MatchingService
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await init_database()
+    try:
+        print("Starting database initialization...")
+        await init_database()
+        print("Database initialization completed successfully")
+    except Exception as e:
+        print(f"Failed to initialize database: {e}")
+        raise
     yield
     # Shutdown - cleanup if needed
+    print("Application shutting down...")
 
 app = FastAPI(
     title="Social Rent API",

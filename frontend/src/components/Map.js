@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
-import { MapPin, Home, DollarSign, Filter, RefreshCw } from 'lucide-react';
-import { listingAPI } from '../services/api';
+import { MapPin, Home, DollarSign, Filter, RefreshCw, Users } from 'lucide-react';
+import { listingAPI, userAPI } from '../services/api';
 import { useUser } from '../context/UserContext';
 import { useTelegram } from '../hooks/useTelegram';
 import 'leaflet/dist/leaflet.css';

@@ -105,8 +105,17 @@ async def like_user(
     db: AsyncSession = Depends(get_database)
 ):
     """Like another user"""
+    try:
+        # Convert string UUID to UUID object
+        liked_user_id = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user ID format"
+        )
+    
     matching_service = MatchingService(db)
-    result = await matching_service.like_user(current_user.id, user_id)
+    result = await matching_service.like_user(current_user.id, liked_user_id)
     return result
 
 @app.get("/api/users/matches", response_model=list[MatchResponse])

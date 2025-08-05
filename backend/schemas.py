@@ -29,8 +29,8 @@ class UserCreate(UserBase):
     lon: Optional[float] = Field(None, ge=-180, le=180, description="Longitude must be between -180 and 180")
 
 class UserUpdate(UserBase):
-    lat: Optional[float] = None
-    lon: Optional[float] = None
+    lat: Optional[float] = Field(None, ge=-90, le=90, description="Latitude must be between -90 and 90")
+    lon: Optional[float] = Field(None, ge=-180, le=180, description="Longitude must be between -180 and 180")
 
 class UserResponse(UserBase):
     id: UUID

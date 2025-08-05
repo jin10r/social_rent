@@ -146,6 +146,20 @@ const Map = () => {
           <div className="flex gap-2">
             <button
               className="tg-button tg-button-secondary"
+              onClick={() => setShowMatches(!showMatches)}
+              style={{ 
+                width: 'auto', 
+                minHeight: 'auto', 
+                padding: '8px 12px',
+                fontSize: '14px',
+                backgroundColor: showMatches ? 'var(--tg-button-color)' : undefined,
+                color: showMatches ? 'var(--tg-button-text-color)' : undefined
+              }}
+            >
+              <Users size={14} />
+            </button>
+            <button
+              className="tg-button tg-button-secondary"
               onClick={() => setShowFilters(!showFilters)}
               style={{ 
                 width: 'auto', 

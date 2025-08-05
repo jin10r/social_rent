@@ -8,6 +8,10 @@ import os
 import uuid
 from typing import AsyncGenerator
 import asyncio
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from models import User, Listing, UserLike, UserMatch, ListingLike
 from schemas import (

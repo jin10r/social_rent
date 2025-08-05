@@ -182,7 +182,7 @@ def generate_listing_data() -> dict:
         'updated_at': fake.date_time_between(start_date='-7d', end_date='now')
     }
 
-async def create_users(conn, num_users: int = 100):
+async def create_users(conn, num_users: int = 1000):
     """Создает пользователей в базе данных"""
     print(f"Создание {num_users} пользователей...")
     

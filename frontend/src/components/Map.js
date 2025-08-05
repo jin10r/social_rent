@@ -34,6 +34,7 @@ const Map = () => {
   useEffect(() => {
     getUserLocation();
     loadListings();
+    loadMatches();
   }, []);
 
   const getUserLocation = () => {

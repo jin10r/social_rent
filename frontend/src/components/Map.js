@@ -24,6 +24,8 @@ const Map = () => {
   const [searchRadius, setSearchRadius] = useState(2000); // meters
   const [priceFilter, setPriceFilter] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [showMatches, setShowMatches] = useState(false);
 
   // Moscow center as fallback
   const moscowCenter = [55.7558, 37.6176];

@@ -84,7 +84,7 @@ async def get_current_user(
     """Get current user from token"""
     try:
         # Verify auth data
-        user_data = verify_telegram_auth(credentials.credentials)
+        user_data = await verify_telegram_auth(credentials)
         telegram_id = user_data.get('id')
         
         if not telegram_id:

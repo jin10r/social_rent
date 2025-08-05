@@ -60,6 +60,16 @@ const Map = () => {
     }
   };
 
+  const loadMatches = async () => {
+    try {
+      const response = await userAPI.getMatches();
+      setMatches(response.data);
+    } catch (error) {
+      console.error('Error loading matches:', error);
+      // Не показываем ошибку, так как матчи не критичны для карты
+    }
+  };
+
   const loadListings = async () => {
     try {
       const response = await listingAPI.getUserListings();

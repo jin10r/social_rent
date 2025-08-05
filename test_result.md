@@ -81,15 +81,18 @@ backend:
 
   - task: "Get User Matches API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/main.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "⏳ GET /api/users/matches endpoint not fully tested due to dependency on user matching functionality."
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/users/matches endpoint working correctly. Successfully returns mutual matches with proper user profile data. Fixed matching logic to create UserMatch records when mutual likes occur."
 
   - task: "Get Listings API"
     implemented: true

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 from contextlib import asynccontextmanager
 import os
+import uuid
 from typing import AsyncGenerator
 import asyncio
 

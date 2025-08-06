@@ -6,8 +6,11 @@ from sqlalchemy.orm import declarative_base
 from contextlib import asynccontextmanager
 import os
 import uuid
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List
 import asyncio
+import logging
+import subprocess
+import sys
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -22,14 +25,42 @@ from schemas import (
 from database import get_database, init_database
 from auth import verify_telegram_auth, get_current_user
 from services import UserService, ListingService, MatchingService
+from metro_stations import get_metro_stations_list, get_metro_station_info, search_metro_stations
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+async def generate_test_data():
+    """Generate test data for the application"""
+    try:
+        logger.info("Starting test data generation...")
+        # Run generate_test_data.py script
+        result = subprocess.run([
+            sys.executable, '/app/generate_test_data.py'
+        ], capture_output=True, text=True, cwd='/app')
+        
+        if result.returncode == 0:
+            logger.info("Test data generation completed successfully")
+        else:
+            logger.error(f"Test data generation failed: {result.stderr}")
+    except Exception as e:
+        logger.error(f"Error during test data generation: {e}")
 
 # Initialize FastAPI app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logger.info("Application startup: Initializing database...")
     await init_database()
+    
+    logger.info("Application startup: Generating test data...")
+    await generate_test_data()
+    
+    logger.info("Application startup completed")
     yield
     # Shutdown - cleanup if needed
+    logger.info("Application shutdown")
 
 app = FastAPI(
     title="Social Rent API",
@@ -59,6 +90,29 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# Metro stations endpoints
+@app.get("/api/metro/stations", response_model=List[str])
+async def get_metro_stations():
+    """Get all metro stations"""
+    return get_metro_stations_list()
+
+@app.get("/api/metro/search")
+async def search_metro(query: str = ""):
+    """Search metro stations by query"""
+    stations = search_metro_stations(query)
+    return [{"name": station, **get_metro_station_info(station)} for station in stations]
+
+@app.get("/api/metro/station/{station_name}")
+async def get_station_info(station_name: str):
+    """Get metro station info by name"""
+    info = get_metro_station_info(station_name)
+    if not info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Metro station not found"
+        )
+    return info
 
 # User endpoints
 @app.post("/api/users/", response_model=UserResponse)

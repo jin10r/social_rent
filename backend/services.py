@@ -72,8 +72,13 @@ class UserService:
         for field, value in user_data.dict(exclude_unset=True, exclude={'lat', 'lon'}).items():
             setattr(user, field, value)
         
-        # Update location if provided
-        if user_data.lat is not None and user_data.lon is not None:
+        # Update location based on metro station or lat/lon
+        if user_data.metro_station:
+            station_info = get_metro_station_info(user_data.metro_station)
+            if station_info:
+                location_text = f'POINT({station_info["lon"]} {station_info["lat"]})'
+                user.search_location = func.ST_GeogFromText(location_text)
+        elif user_data.lat is not None and user_data.lon is not None:
             location_text = f'POINT({user_data.lon} {user_data.lat})'
             user.search_location = func.ST_GeogFromText(location_text)
         

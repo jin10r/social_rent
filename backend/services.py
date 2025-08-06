@@ -22,13 +22,16 @@ class UserService:
 
         if existing_user:
             # Update existing user
-            for field, value in user_data.dict(exclude_unset=True, exclude={'telegram_id'}).items():
-                if field in ['lat', 'lon']:
-                    continue
+            for field, value in user_data.dict(exclude_unset=True, exclude={'telegram_id', 'lat', 'lon'}).items():
                 setattr(existing_user, field, value)
             
-            # Update location if provided
-            if user_data.lat is not None and user_data.lon is not None:
+            # Update location based on metro station or lat/lon
+            if user_data.metro_station:
+                station_info = get_metro_station_info(user_data.metro_station)
+                if station_info:
+                    location_text = f'POINT({station_info["lon"]} {station_info["lat"]})'
+                    existing_user.search_location = func.ST_GeogFromText(location_text)
+            elif user_data.lat is not None and user_data.lon is not None:
                 location_text = f'POINT({user_data.lon} {user_data.lat})'
                 existing_user.search_location = func.ST_GeogFromText(location_text)
             
@@ -41,8 +44,13 @@ class UserService:
             user_dict = user_data.dict(exclude={'lat', 'lon'})
             new_user = User(**user_dict)
             
-            # Set location if provided
-            if user_data.lat is not None and user_data.lon is not None:
+            # Set location based on metro station or lat/lon
+            if user_data.metro_station:
+                station_info = get_metro_station_info(user_data.metro_station)
+                if station_info:
+                    location_text = f'POINT({station_info["lon"]} {station_info["lat"]})'
+                    new_user.search_location = func.ST_GeogFromText(location_text)
+            elif user_data.lat is not None and user_data.lon is not None:
                 location_text = f'POINT({user_data.lon} {user_data.lat})'
                 new_user.search_location = func.ST_GeogFromText(location_text)
             

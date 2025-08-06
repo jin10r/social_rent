@@ -7,6 +7,7 @@ from schemas import UserCreate, UserUpdate, ListingResponse, UserProfileResponse
 from typing import List, Optional, Dict
 import uuid
 from datetime import datetime
+from metro_stations import get_metro_station_info
 
 class UserService:
     def __init__(self, db: AsyncSession):

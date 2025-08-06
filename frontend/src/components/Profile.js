@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, MapPin, DollarSign, Calendar, Edit3 } from 'lucide-react';
+import { Camera, MapPin, DollarSign, Calendar, Edit3, Search } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { userAPI } from '../services/api';
+import { userAPI, metroAPI } from '../services/api';
 import { useTelegram } from '../hooks/useTelegram';
 
 const Profile = () => {
@@ -10,6 +10,10 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [metroStations, setMetroStations] = useState([]);
+  const [metroQuery, setMetroQuery] = useState('');
+  const [showMetroSuggestions, setShowMetroSuggestions] = useState(false);
+  const [filteredStations, setFilteredStations] = useState([]);
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -18,13 +22,12 @@ const Profile = () => {
     price_min: '',
     price_max: '',
     metro_station: '',
-    search_radius: '1000',
-    lat: null,
-    lon: null
+    search_radius: '1000'
   });
 
   useEffect(() => {
     loadProfile();
+    loadMetroStations();
   }, []);
 
   useEffect(() => {
@@ -37,6 +40,18 @@ const Profile = () => {
       }));
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    // Filter metro stations based on query
+    if (metroQuery.trim() === '') {
+      setFilteredStations(metroStations.slice(0, 10));
+    } else {
+      const filtered = metroStations.filter(station =>
+        station.name.toLowerCase().includes(metroQuery.toLowerCase())
+      ).slice(0, 10);
+      setFilteredStations(filtered);
+    }
+  }, [metroQuery, metroStations]);
 
   const loadProfile = async () => {
     try {
@@ -53,6 +68,7 @@ const Profile = () => {
         search_radius: userData.search_radius || '1000',
         photo_url: userData.photo_url
       });
+      setMetroQuery(userData.metro_station || '');
     } catch (error) {
       console.log('Profile not found, will create new one');
       if (currentUser) {
@@ -67,9 +83,24 @@ const Profile = () => {
     setLoading(false);
   };
 
+  const loadMetroStations = async () => {
+    try {
+      const response = await metroAPI.searchStations('');
+      setMetroStations(response.data || []);
+      setFilteredStations(response.data?.slice(0, 10) || []);
+    } catch (error) {
+      console.error('Error loading metro stations:', error);
+    }
+  };
+
   const handleSave = async () => {
     if (!profile.first_name || !profile.age) {
       showAlert('Пожалуйста, заполните обязательные поля (имя и возраст)');
+      return;
+    }
+
+    if (!profile.metro_station) {
+      showAlert('Пожалуйста, выберите станцию метро');
       return;
     }
 
@@ -86,22 +117,10 @@ const Profile = () => {
         search_radius: parseInt(profile.search_radius)
       };
 
-      // Get location if needed
-      if (!profile.lat && !profile.lon && navigator.geolocation) {
-        try {
-          const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          });
-          userData.lat = position.coords.latitude;
-          userData.lon = position.coords.longitude;
-        } catch (error) {
-          console.log('Could not get location');
-        }
-      }
-
       const response = await userAPI.createUser(userData);
       setCurrentUser(response.data);
       setEditing(false);
+      setShowMetroSuggestions(false);
       showAlert('Профиль сохранен!');
       hapticFeedback('notification', 'success');
     } catch (error) {
@@ -112,26 +131,17 @@ const Profile = () => {
     setSaving(false);
   };
 
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setProfile(prev => ({
-            ...prev,
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          }));
-          showAlert('Местоположение обновлено');
-          hapticFeedback('notification', 'success');
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          showAlert('Не удалось получить местоположение');
-        }
-      );
-    } else {
-      showAlert('Геолокация не поддерживается');
-    }
+  const handleMetroStationSelect = (station) => {
+    setProfile(prev => ({ ...prev, metro_station: station.name }));
+    setMetroQuery(station.name);
+    setShowMetroSuggestions(false);
+  };
+
+  const handleMetroInputChange = (e) => {
+    const value = e.target.value;
+    setMetroQuery(value);
+    setProfile(prev => ({ ...prev, metro_station: value }));
+    setShowMetroSuggestions(true);
   };
 
   if (loading) {
@@ -155,7 +165,12 @@ const Profile = () => {
               padding: '8px 16px',
               fontSize: '14px'
             }}
-            onClick={() => setEditing(!editing)}
+            onClick={() => {
+              setEditing(!editing);
+              if (editing) {
+                setShowMetroSuggestions(false);
+              }
+            }}
           >
             <Edit3 size={16} />
             <span style={{ marginLeft: '8px' }}>
@@ -313,19 +328,74 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="tg-list-item">
+          <div className="tg-list-item" style={{ position: 'relative' }}>
             <div className="mb-2 flex items-center gap-2">
               <MapPin size={16} />
-              <label className="tg-text-hint">Станция метро</label>
+              <label className="tg-text-hint">Станция метро *</label>
             </div>
             {editing ? (
-              <input
-                className="tg-input"
-                type="text"
-                value={profile.metro_station}
-                onChange={(e) => setProfile(prev => ({ ...prev, metro_station: e.target.value }))}
-                placeholder="Например: Сокольники"
-              />
+              <>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="tg-input"
+                    type="text"
+                    value={metroQuery}
+                    onChange={handleMetroInputChange}
+                    onFocus={() => setShowMetroSuggestions(true)}
+                    placeholder="Начните вводить название станции..."
+                  />
+                  <Search 
+                    size={16} 
+                    style={{ 
+                      position: 'absolute', 
+                      right: '12px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: '#999' 
+                    }} 
+                  />
+                </div>
+                
+                {showMetroSuggestions && filteredStations.length > 0 && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '0',
+                      right: '0',
+                      backgroundColor: 'var(--tg-theme-bg-color, #ffffff)',
+                      border: '1px solid var(--tg-theme-hint-color, #ccc)',
+                      borderRadius: '8px',
+                      zIndex: 1000,
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {filteredStations.map((station, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          borderBottom: index < filteredStations.length - 1 ? '1px solid var(--tg-theme-hint-color, #eee)' : 'none',
+                          ':hover': {
+                            backgroundColor: 'var(--tg-theme-section-bg-color, #f5f5f5)'
+                          }
+                        }}
+                        onClick={() => handleMetroStationSelect(station)}
+                      >
+                        <div style={{ fontWeight: '500' }}>{station.name}</div>
+                        {station.line && (
+                          <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color, #999)', marginTop: '2px' }}>
+                            {station.line} линия
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div>{profile.metro_station || 'Не указано'}</div>
             )}
@@ -351,19 +421,6 @@ const Profile = () => {
               <div>{Math.round(profile.search_radius / 1000)} км</div>
             )}
           </div>
-
-          {editing && (
-            <div className="tg-list-item">
-              <button
-                className="tg-button tg-button-secondary"
-                onClick={getCurrentLocation}
-                style={{ marginTop: '8px' }}
-              >
-                <MapPin size={16} />
-                <span style={{ marginLeft: '8px' }}>Определить местоположение</span>
-              </button>
-            </div>
-          )}
         </div>
 
         {editing && (

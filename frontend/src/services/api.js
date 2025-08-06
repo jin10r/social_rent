@@ -54,6 +54,18 @@ api.interceptors.response.use(
   }
 );
 
+// Metro stations API
+export const metroAPI = {
+  // Get all metro stations
+  getStations: () => api.get('/api/metro/stations'),
+  
+  // Search metro stations
+  searchStations: (query) => api.get('/api/metro/search', { params: { query } }),
+  
+  // Get station info
+  getStationInfo: (stationName) => api.get(`/api/metro/station/${encodeURIComponent(stationName)}`),
+};
+
 // API functions
 export const userAPI = {
   // Create or update user

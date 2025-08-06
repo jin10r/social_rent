@@ -45,7 +45,7 @@ async def check_database_health():
         try:
             async with engine.begin() as conn:
                 # Simple query to check connectivity
-                result = await conn.execute("SELECT 1")
+                result = await conn.execute(text("SELECT 1"))
                 logging.info("Database health check passed")
                 return True
         except Exception as e:
